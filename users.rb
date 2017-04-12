@@ -1,6 +1,4 @@
-class User
-  @@table = 'users'
-
+class User < ModelBase
   attr_accessor :fname, :lname
 
   def initialize(options)
@@ -9,16 +7,8 @@ class User
     @lname = options['lname']
   end
 
-  def self.find_by_id(id)
-    data = QuestionDBConnection.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        users
-      WHERE
-        id = ?
-    SQL
-    User.new(data.first)
+  def self.table_name
+    'users'
   end
 
   def self.find_by_name(fname, lname)
@@ -68,34 +58,5 @@ class User
         questions.author_id = ?
     SQL
     data.first['average_karma']
-  end
-
-  def save
-    @id ? update : create
-  end
-
-  private
-
-  def create
-    raise "#{self} already in database" if @id
-    QuestionDBConnection.instance.execute(<<-SQL, @fname, @lname)
-      INSERT INTO
-        users (fname, lname)
-      VALUES
-        (?, ?)
-    SQL
-    @id = QuestionDBConnection.instance.last_insert_row_id
-  end
-
-  def update
-    raise "#{self} not in database" unless @id
-    QuestionDBConnection.instance.execute(<<-SQL, @fname, @lname, @id)
-      UPDATE
-        users
-      SET
-        fname = ?, lname = ?
-      WHERE
-        id = ?
-    SQL
   end
 end

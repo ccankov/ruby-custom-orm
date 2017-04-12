@@ -1,6 +1,4 @@
-class QuestionFollow
-  @@table = 'question_follows'
-
+class QuestionFollow < ModelBase
   attr_accessor :question_id, :follower_id
 
   def initialize(options)
@@ -9,16 +7,8 @@ class QuestionFollow
     @follower_id = options['follower_id']
   end
 
-  def self.find_by_id(id)
-    data = QuestionDBConnection.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        question_follows
-      WHERE
-        id = ?
-    SQL
-    QuestionFollow.new(data.first)
+  def self.table_name
+    'question_follows'
   end
 
   def self.followers_for_question_id(question_id)

@@ -1,6 +1,4 @@
-class QuestionLike
-  @@table = 'question_likes'
-
+class QuestionLike < ModelBase
   attr_accessor :user_id, :question_id
 
   def initialize(options)
@@ -9,16 +7,8 @@ class QuestionLike
     @question_id = options['question_id']
   end
 
-  def self.find_by_id(id)
-    data = QuestionDBConnection.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        question_likes
-      WHERE
-        id = ?
-    SQL
-    QuestionLike.new(data.first)
+  def self.table_name
+    'question_likes'
   end
 
   def self.likers_for_question_id(question_id)

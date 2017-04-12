@@ -16,9 +16,7 @@ class QuestionDBConnection < SQLite3::Database
   end
 end
 
-class Question
-  @@table = 'questions'
-
+class Question < ModelBase
   attr_accessor :title, :body, :author_id
 
   def initialize(options)
@@ -28,16 +26,8 @@ class Question
     @author_id = options['author_id']
   end
 
-  def self.find_by_id(id)
-    data = QuestionDBConnection.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        questions
-      WHERE
-        id = ?
-    SQL
-    Question.new(data.first)
+  def self.table_name
+    'questions'
   end
 
   def self.find_by_author_id(author_id)
@@ -74,34 +64,5 @@ class Question
 
   def num_likes
     QuestionLike.num_likes_for_question_id(@id)
-  end
-
-  def save
-    @id ? update : create
-  end
-
-  private
-
-  def create
-    raise "#{self} already in database" if @id
-    QuestionDBConnection.instance.execute(<<-SQL, @title, @body, @author_id)
-      INSERT INTO
-        questions (title, body, author_id)
-      VALUES
-        (?, ?, ?)
-    SQL
-    @id = QuestionDBConnection.instance.last_insert_row_id
-  end
-
-  def update
-    raise "#{self} not in database" unless @id
-    QuestionDBConnection.instance.execute(<<-SQL, @title, @body, @author_id, @id)
-      UPDATE
-        questions
-      SET
-        title = ?, body = ?, author_id = ?
-      WHERE
-        id = ?
-    SQL
   end
 end

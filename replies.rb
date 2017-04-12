@@ -1,5 +1,4 @@
-class Reply
-  @@table = 'replies'
+class Reply < ModelBase
 
   attr_accessor :question_id, :parent_id, :author_id, :body
 
@@ -11,16 +10,8 @@ class Reply
     @body = options['body']
   end
 
-  def self.find_by_id(id)
-    data = QuestionDBConnection.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        replies
-      WHERE
-        id = ?
-    SQL
-    Reply.new(data.first)
+  def self.table_name
+    'replies'
   end
 
   def self.find_by_user_id(author_id)
@@ -70,34 +61,5 @@ class Reply
         parent_id = ?
     SQL
     data.map{|datum| Reply.new(datum)}
-  end
-
-  def save
-    @id ? update : create
-  end
-
-  private
-
-  def create
-    raise "#{self} already in database" if @id
-    QuestionDBConnection.instance.execute(<<-SQL, @question_id, @parent_id, @author_id, @body)
-      INSERT INTO
-        replies (question_id, parent_id, author_id, body)
-      VALUES
-        (?, ?, ?, ?)
-    SQL
-    @id = QuestionDBConnection.instance.last_insert_row_id
-  end
-
-  def update
-    raise "#{self} not in database" unless @id
-    QuestionDBConnection.instance.execute(<<-SQL, @question_id, @parent_id, @author_id, @body, @id)
-      UPDATE
-        replies
-      SET
-        question_id = ?, parent_id = ?, author_id = ?, body = ?
-      WHERE
-        id = ?
-    SQL
   end
 end
