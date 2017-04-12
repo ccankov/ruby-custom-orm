@@ -1,5 +1,3 @@
-require 'byebug'
-
 class ModelBase
 
   def self.table_name
@@ -43,7 +41,6 @@ class ModelBase
     var_values = ivars.map { |varname| instance_variable_get(varname) }
     num_vars = ivars.length
     str_vars = ivars.join(', ').delete('@')
-    debugger
     QuestionDBConnection.instance.execute(<<-SQL, *var_values)
       INSERT INTO
         #{table} (#{str_vars})
